@@ -2,131 +2,791 @@
 <html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Paws &amp; Shine Grooming</title>
+<title>Bridal Boutique</title>
 
-<link rel="stylesheet" href="style.1775907029580.css">
+<!-- PREMIUM FONTS -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=Lora:wght@400;500&amp;display=swap" rel="stylesheet">
 
- 
+<script>
 
+function initTemplateNavSlider() {
+  let templateNavIndex = 0;
+  const templateNavCards = document.querySelectorAll(".template-card");
+  const templateNavPrev = document.querySelector(".templateNav-left");
+  const templateNavNext = document.querySelector(".templateNav-right");
 
+  if (!templateNavCards.length) return;
 
-<link rel="stylesheet" href="chrome-extension://4a4fdc5e-916e-4dfd-b301-e0d6f085fed4/app/content-style.css"></head>
-<body id="Sav">
+  function templateNavShowCard(i) {
+    templateNavCards.forEach(c => c.classList.remove("active"));
+    templateNavCards[i].classList.add("active");
+  }
 
-<!-- NAV -->
+  if (templateNavPrev && templateNavNext) {
+    templateNavNext.onclick = () => {
+      templateNavIndex = (templateNavIndex + 1) % templateNavCards.length;
+      templateNavShowCard(templateNavIndex);
+    };
+
+    templateNavPrev.onclick = () => {
+      templateNavIndex = (templateNavIndex - 1 + templateNavCards.length) % templateNavCards.length;
+      templateNavShowCard(templateNavIndex);
+    };
+
+    setInterval(() => {
+      templateNavIndex = (templateNavIndex + 1) % templateNavCards.length;
+      templateNavShowCard(templateNavIndex);
+    }, 3000);
+  }
+}
+
+// Mobile hamburger toggle
+document.addEventListener("DOMContentLoaded", () => {
+  const toggle = document.getElementById("nav-toggle");
+  const links = document.getElementById("nav-links");
+
+  if (toggle && links) {
+    toggle.addEventListener("click", () => {
+      links.classList.toggle("show");
+    });
+  }
+});
+
+async function loadProducts() {
+  const wrapper = document.querySelector(".templateNav-wrapper");
+  const list = document.querySelector(".template-list");
+
+  if (!wrapper || !list) {
+    console.error("Wrapper or list not found in DOM.");
+    return;
+  }
+
+  /* ---------------------------------------------------
+     1) PREVIEW MODE → ALWAYS SHOW DEFAULT PRODUCTS + NAV
+  --------------------------------------------------- */
+  if (window.previewMode) {
+    console.log("Preview mode enabled — using default products.");
+    wrapper.style.display = "block";
+    return;
+  }
+
+  /* ---------------------------------------------------
+     2) NORMAL MODE → TRY LOADING products.json
+  --------------------------------------------------- */
+  try {
+    const res = await fetch("Products/products.json");
+
+    // JSON missing → hide wrapper + hide nav
+    if (!res.ok) {
+      console.warn("products.json not found — hiding store.");
+      wrapper.style.display = "none";
+      return;
+    }
+
+    // JSON exists → show wrapper + show nav
+    wrapper.style.display = "block";
+    showStoreNav();
+
+    const data = await res.json();
+    const products = data.products ?? [];
+
+    list.innerHTML = "";
+
+    products.forEach((p) => {
+      const lowestVariant = p.variants?.length
+        ? p.variants.reduce((min, v) => (v.price < min.price ? v : min))
+        : null;
+
+      const price = lowestVariant ? lowestVariant.price : p.basePrice ?? "N/A";
+
+      const card = document.createElement("div");
+      card.className = "template-card";
+
+      card.innerHTML = `
+        <img src="${p.image}" alt="">
+        <h3>${p.name}</h3>
+        <p>${p.description}</p>
+        <div class="price">€${price}</div>
+        <a class="btn" href="#">Add To Cart</a>
+      `;
+
+      list.appendChild(card);
+    });
+
+    initTemplateNavSlider();
+
+  } catch (err) {
+    console.error("Error loading products:", err);
+    wrapper.style.display = "none";
+    hideStoreNav();
+  }
+}
+
+    document.addEventListener("DOMContentLoaded", () => {
+  // Make preview mode globally accessible
+  const urlParams = new URLSearchParams(window.location.search);
+  window.previewMode = urlParams.get("preview") === "true";
+
+  loadProducts();
+});
+</script>
+
+<style>
+/* GLOBAL */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    font-family: "Lora", serif;
+    background-color: #faf7f5;
+    color: #4a3f3b;
+}
+
+h1, h2, h3 {
+    font-family: "Playfair Display", serif;
+}
+
+/* -------------------------------------- */
+/* NAVIGATION */
+/* -------------------------------------- */
+
+nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 15px;
+    background: #222;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    animation: navFade 1.2s ease forwards;
+}
+
+@keyframes navFade {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+nav h1 {
+    font-size: 2rem;
+    letter-spacing: 3px;
+    color: #F7B161;
+    margin: 0;
+    position: relative;
+    padding: 0 25px;
+    animation: titleGlow 2s ease forwards;
+}
+
+@keyframes titleGlow {
+    from { letter-spacing: 1px; opacity: 0.5; }
+    to { letter-spacing: 3px; opacity: 1; }
+}
+
+/* Rose‑gold gradient lines */
+nav h1::before,
+nav h1::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 15px;
+    height: 2px;
+    background: linear-gradient(to right, #F7B161, #fff);
+}
+
+nav h1::before { left: -5px; }
+nav h1::after { right: -5px; }
+
+/* -------------------------------------- */
+/* HERO SECTION */
+/* -------------------------------------- */
+
+#hero {
+    position: relative;
+    width: 100%;
+    height: 90vh;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+#hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    animation: slowZoom 12s ease-in-out infinite alternate;
+    pointer-events: fill;
+}
+
+@keyframes slowZoom {
+    from { transform: scale(1); }
+    to { transform: scale(1.08); }
+}
+
+/* Cinematic gradient overlay */
+#hero::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.2),
+        rgba(0,0,0,0.55)
+    );
+    z-index: 1;
+}
+
+/* Hero text */
+#hero-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 2;
+    max-width: 700px;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 6px;
+    width: 85%;
+    animation: fadeInHero 1.5s ease forwards;
+    pointer-events: fill;
+}
+
+@keyframes fadeInHero {
+    from { opacity: 0; transform: translate(-50%, -40%); }
+    to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+#hero-text h2 {
+    font-size: 60px;
+    margin: 0 0 20px;
+    color: #fff;
+}
+
+#hero-text p {
+    font-size: 20px;
+    line-height: 1.6;
+    color: #fff;
+}
+
+/* Optional CTA button */
+#hero-text a {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 12px 28px;
+    background: #F7B161;
+    color: #222;
+    text-decoration: none;
+    font-size: 18px;
+    border-radius: 4px;
+    transition: 0.3s ease;
+}
+
+#hero-text a:hover {
+    background: #fff;
+    color: #000;
+}
+
+/* -------------------------------------- */
+/* ABOUT SECTION */
+/* -------------------------------------- */
+
+#about {
+    padding: 50px 0;
+    text-align: center;
+    background-color: #fff;
+    width: 100%;
+    border-top: solid #F7B161 2px;
+    border-bottom: solid #F7B161 2px;
+}
+
+#about h2 {
+    font-size: 42px;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+/* Decorative divider */
+#about h2::after {
+    content: "";
+    display: block;
+    width: 80px;
+    height: 3px;
+    background: #F7B161;
+    margin: 12px auto 25px;
+    border-radius: 2px;
+}
+
+#about p {
+    font-size: 18px;
+    line-height: 1.7;
+    color: #000;
+    max-width: 55%;
+    margin: 0 auto;
+}
+
+/* -------------------------------------- */
+/* GALLERY */
+/* -------------------------------------- */
+
+#gallery {
+    padding: 15px 40px;
+    background: #222;
+}
+
+#gallery h2 {
+    text-align: center;
+    font-size: 42px;
+    color: #F7B161;
+    margin-bottom: 40px;
+}
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: auto;
+}
+
+.gallery-grid img {
+    width: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.gallery-grid img:hover {
+    transform: scale(1.03);
+    opacity: 0.9;
+}
+
+/* -------------------------------------- */
+/* SIGN-UP SECTION */
+/* -------------------------------------- */
+
+#signup {
+    background: #fff7f0;
+    padding: 60px 20px;
+    text-align: center;
+    border-top: 2px solid #F7B161;
+    border-bottom: 2px solid #F7B161;
+}
+
+#signup h2 {
+    font-size: 38px;
+    color: #000;
+    margin-bottom: 10px;
+}
+
+#signup p {
+    font-size: 18px;
+    color: #4a3f3b;
+    margin-bottom: 25px;
+}
+
+#signup form {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#signup input {
+    padding: 12px 15px;
+    width: 280px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+#signup button {
+    padding: 12px 25px;
+    background: #F7B161;
+    border: none;
+    color: #222;
+    font-size: 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+
+#signup button:hover {
+    background: #fff;
+    color: #000;
+    border: 1px solid #F7B161;
+}
+
+/* -------------------------------------- */
+/* CONTACT SECTION */
+/* -------------------------------------- */
+
+#contact {
+    background: #222;
+    padding: 60px 20px;
+    text-align: center;
+}
+
+#contact h2 {
+    font-size: 42px;
+    color: #fff;
+    margin-bottom: 20px;
+}
+
+.contact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    margin: 0 auto 30px;
+}
+
+#contact h3 {
+    color: #fff;
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+#contact p {
+    font-size: 18px;
+    color: #fff;
+    line-height: 1.6;
+}
+
+.contact-btn {
+    display: inline-block;
+    padding: 12px 30px;
+    background: #F7B161;
+    color: #222;
+    text-decoration: none;
+    font-size: 18px;
+    border-radius: 4px;
+    transition: 0.3s ease;
+}
+
+.contact-btn:hover {
+    background: #fff;
+    color: #000;
+    border: 1px solid #F7B161;
+}
+
+/* -------------------------------------- */
+/* FOOTER */
+/* -------------------------------------- */
+
+footer {
+    background: #111;
+    color: #eee;
+    text-align: center;
+    padding: 25px 10px;
+    border-top: 2px solid #F7B161;
+    font-size: 16px;
+    letter-spacing: 1px;
+}
+
+/* -------------------------------------- */
+/* TABLET */
+/* -------------------------------------- */
+
+@media (max-width: 1024px) and (min-width: 481px){
+    #about p { max-width: 70%; }
+}
+
+/* -------------------------------------- */
+/* MOBILE */
+/* -------------------------------------- */
+
+@media (max-width: 480px){
+    #hero { height: 55vh; }
+    #hero-text { padding: 15px; }
+    #hero-text h2 { font-size: 32px; }
+    #hero-text p { font-size: 16px; }
+
+    #about { padding: 25px 0px; }
+    #about h2,
+    #about p { max-width: 100%; }
+
+    #about p {
+        font-size: 20px;
+        text-align: left;
+        padding: 1rem;
+    }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@latest/dist/clerk.browser.js" async="" crossorigin="anonymous" data-clerk-publishable-key="pk_live_Y2xlcmsuaWRlYWdvLmllJA"></script><script src="https://js.stripe.com/dahlia/stripe.js"></script><link rel="stylesheet" href="style.css"></head>
+
+<body>
+<div id="contain">
+
 <nav>
-  <div class="logo">Paws &amp; Shine</div>
+    <h1 class="" style="cursor: text;">Business Name</h1>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <img src="images/img_0.1775907029580.jpg" alt="Pet Grooming" style="cursor: pointer;">
-  <div class="hero-content">
-    <h1 class="" style="cursor: text;">Premium Pet Grooming</h1>
-    <p class="" style="cursor: text;">Gentle care, happy pets, and professional grooming for dogs &amp; cats.</p>
-    <button>Book Now</button>
-  </div>
-</section>
-
-<!-- SERVICES -->
-<section id="services" class="services">
-  <h2 class="" style="cursor: text;">Our Grooming Services</h2>
-  <div class="services-grid">
-    <div class="service-card">
-      <img src="images/img_1.1775907029580.jpg" style="cursor: pointer;">
-      <h3 class="" style="cursor: text;">Full Groom</h3>
-      <p class="" style="cursor: text;">Bath, haircut, nail trim, ear cleaning &amp; styling.</p>
+<div id="hero">
+    <img src="images/img_0.1778690230333.jpg" alt="Bridal Gown" style="cursor: pointer;">
+    <div id="hero-text">
+        <h2 class="" style="cursor: text;">Your Dream Dress Awaits</h2>
+        <p class="" style="cursor: text;">Discover timeless elegance, luxurious fabrics, and handcrafted details designed to make your special day unforgettable.</p>
+        <a href="#about">Book Appointment</a>
     </div>
-    <div class="service-card">
-      <img src="images/img_2.1775907029580.jpg" style="cursor: pointer;">
-      <h3 class="" style="cursor: text;">Bath &amp; Brush</h3>
-      <p class="" style="cursor: text;">Deep clean bath, blow dry &amp; full brushing.</p>
+</div>
+
+<section id="about">
+    <h2 class="" style="cursor: text;">About Us</h2>
+    <p class="" style="cursor: text;">
+        Welcome to our bridal boutique — a place where elegance, romance, and timeless beauty come together.
+        Use this space to tell your story: who you are, what inspires your work, and what makes your boutique
+        special. Share your passion, your experience, and the heart behind your business so brides can feel
+        connected the moment they arrive.
+    </p>
+</section>
+
+<!-- Store Snippet Start -->
+<div class="templateNav-wrapper" style="display: block;">
+  <div class="template-list">
+
+    <div class="template-card">
+      <img src="images/img_1.1778690230333.jpg" alt="" style="cursor: pointer;">
+      <h3 class="" style="cursor: text;">Your Product</h3>
+      <p class="" style="cursor: text;">Your Product Description</p>
+      <div class="price">€29</div>
+      <a class="btn" href="#">Buy Now</a>
     </div>
-    <div class="service-card">
-      <img src="images/img_3.1775907029580.jpg" style="cursor: pointer;">
-      <h3 class="" style="cursor: text;">Puppy Intro</h3>
-      <p class="" style="cursor: text;">Gentle grooming for puppies to get them comfortable.</p>
+
+    <div class="template-card active">
+      <img src="images/img_2.1778690230333.jpg" alt="" style="cursor: pointer;">
+      <h3 class="" style="cursor: text;">Your Product</h3>
+      <p class="" style="cursor: text;">Your Product Description</p>
+      <div class="price">€19</div>
+      <a class="btn" href="#">Buy Now</a>
     </div>
+
+    <div class="template-card">
+      <img src="images/img_3.1778690230333.jpg" alt="" style="cursor: pointer;">
+      <h3 class="" style="cursor: text;">Your Product</h3>
+      <p class="" style="cursor: text;">Your Product Description</p>
+      <div class="price">€39</div>
+      <a class="btn" href="#">Buy Now</a>
+    </div>
+
+    <div class="template-card">
+      <img src="images/img_4.1778690230333.jpg" alt="" style="cursor: pointer;">
+      <h3 class="" style="cursor: text;">Your Product</h3>
+      <p class="" style="cursor: text;">Your Product Description</p>
+      <div class="price">€19</div>
+      <a class="btn" href="#">Buy Now</a>
+    </div>
+
+    <div class="template-card">
+      <img src="images/img_5.1778690230333.jpg" alt="" style="cursor: pointer;">
+      <h3 class="" style="cursor: text;">Your Product</h3>
+      <p class="" style="cursor: text;">Your Product Description</p>
+      <div class="price">€39</div>
+      <a class="btn" href="#">Buy Now</a>
+    </div>
+
   </div>
-</section>
 
-<!-- GALLERY -->
-<section id="gallery" class="gallery">
-  <h2 class="" style="cursor: text;">Happy Pets</h2>
-  <div class="gallery-grid">
-    <img src="images/img_4.1775907029580.jpg" style="cursor: pointer;">
-    <img src="images/img_5.1775907029580.jpg" style="cursor: pointer;">
-    <img src="images/img_6.1775907029580.jpg" style="cursor: pointer;">
-    <img src="images/img_7.1775907029580.jpg" style="cursor: pointer;">
-    <img src="images/img_8.1775907029580.jpg" style="cursor: pointer;">
-    <img src="images/img_9.1775907029580.jpg" style="cursor: pointer;">
-  </div>
-</section>
+  <!-- MOBILE ARROWS (renamed to avoid conflicts) -->
+  <button class="templateNav-arrow templateNav-left">❮</button>
+  <button class="templateNav-arrow templateNav-right">❯</button>
+</div>
 
-<!-- CONTACT CTA -->
-<section id="contact" class="contact-cta">
-  <h2 class="" style="cursor: text;">Contact Us</h2>
-  <p class="" style="cursor: text;">We’re here to make your pets look and feel their best.</p>
+<style>
+.templateNav-wrapper {
+  position: relative;
+  background: #eee;
+  padding: 1rem;
+}
 
-  <div style="margin-top: 30px; font-size: 1.2rem; line-height: 1.8;">
-    <strong>📞 Phone:</strong> <!--a href=""-->+353 00 000 0000<br>
-    <strong>📍 Address:</strong> Main Street, Your Address, Co. , Ireland<br>
-    <strong>⏰ Hours:</strong> Mon–Sat: 9am – 6pm
-  </div>
+/* DESKTOP LAYOUT */
+.template-list {
+  display: flex;
+  gap: 25px;
+  justify-content: center;
+}
 
-  <button style="margin-top: 35px;">Book Appointment</button>
-</section>
+.template-card {
+  width: 300px;
+  background: #222;
+  border-radius: 14px;
+  padding: 14px;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  transition: transform .4s ease, box-shadow .4s ease, opacity .4s ease;
+  opacity: 0.6;
+}
 
+.template-card.active {
+  transform: scale(1.05);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+  opacity: 1;
+}
 
-<!-- FOOTER -->
-<footer>
-  © 2026 Paws &amp; Shine Grooming — All Rights Reserved
-</footer>
-  
-<div id="openedUI" style="position: fixed;width: 90px;left: 20px;bottom: 20px;background: white;border: 1px solid rgba(0, 0, 0, 0.08);border-radius: 10px;visibility: hidden;">
-      <div style="
-    align-items: center;
-    display: flex;
-    padding-top: 12px;
-    padding-right: 12px;
-    padding-left: 12px;
-"><button id="unminifyBtn" type="button" title="Minify" style="
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 8px;
-    background: #00b2ff;
-    color: #000000;
+.template-card img {
+  width: 100%;
+  height: 272px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+.price {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 8px 0;
+  color: #4ade80;
+}
+
+.btn {
+  display: inline-block;
+  padding: 8px 14px;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: .85rem;
+}
+
+/* MOBILE MODE */
+@media (max-width: 600px) {
+  .template-list {
+    display: block;
+    position: relative;
+    height: 500px;
+    overflow: hidden;
+  }
+
+  .template-card {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 90%;
+    transform: translateX(-50%);
+    opacity: 0;
+  }
+
+  .template-card.active {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.02);
+  }
+
+  /* RENAMED ARROWS */
+  .templateNav-arrow {
+    display: block;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.15);
     border: none;
-    border-radius: 6px;
+    color: #fff;
+    font-size: 26px;
+    padding: 6px 12px;
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: 600;
-    margin-right: 2vh;
-">Open</button></div>
-      
+    z-index: 10;
+  }
+
+  .templateNav-left { left: 10px; }
+  .templateNav-right { right: 10px; }
+}
+
+/* HIDE ARROWS ON DESKTOP */
+@media (min-width: 601px) {
+  .templateNav-arrow { display: none; }
+}
+</style>
+
+<script>
+let templateNavIndex = 0;
+const templateNavCards = document.querySelectorAll(".template-card");
+const templateNavPrev = document.querySelector(".templateNav-left");
+const templateNavNext = document.querySelector(".templateNav-right");
+
+function templateNavShowCard(i) {
+  templateNavCards.forEach(c => c.classList.remove("active"));
+  templateNavCards[i].classList.add("active");
+}
+
+if (templateNavPrev && templateNavNext) {
+  templateNavNext.addEventListener("click", () => {
+    templateNavIndex = (templateNavIndex + 1) % templateNavCards.length;
+    templateNavShowCard(templateNavIndex);
+  });
+
+  templateNavPrev.addEventListener("click", () => {
+    templateNavIndex = (templateNavIndex - 1 + templateNavCards.length) % templateNavCards.length;
+    templateNavShowCard(templateNavIndex);
+  });
+
+  setInterval(() => {
+    templateNavIndex = (templateNavIndex + 1) % templateNavCards.length;
+    templateNavShowCard(templateNavIndex);
+  }, 3000);
+}
+</script>
+<!-- Store Snippet End -->
+
+<section id="gallery">
+    <h2 class="" style="cursor: text;">Our Gallery</h2>
+    <div class="gallery-grid">
+        <img src="images/img_6.1778690230333.jpg" style="cursor: pointer;">
+        <img src="images/img_7.1778690230333.jpg" style="cursor: pointer;">
+        <img src="images/img_8.1778690230333.jpg" style="cursor: pointer;">
+        <img src="images/img_9.1778690230333.jpg" style="cursor: pointer;">
+        <img src="images/img_10.1778690230333.jpg" style="cursor: pointer;">
+        <img src="images/img_11.1778690230333.jpg" style="cursor: pointer;">
+        <img src="images/img_12.1778690230333.jpg" style="cursor: pointer;">
+        <img src="images/img_13.1778690230333.jpg" style="cursor: pointer;">
     </div>
-  
-  <!-- Floating editor panel -->
-<div id="closedUI" style="position: fixed; width: 300px; left: 20px; bottom: 20px; background: white; border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 10px;visibility: visible;">
-      <div style="
-    align-items: center;
-    display: flex;
-    padding-top: 12px;
-    padding-right: 12px;
-    padding-left: 12px;
-"><button style="width: 100%; padding: 10px; margin-bottom: 8px; background: #000000; color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
-          <a class="back-btn" href="/WebsiteGenerator" style="color: #ffffff; text-decoration: none;">
-            <i>←</i> Back
-          </a>
-        </button></div>
-      
+</section>
+
+<!-- SIGN-UP SECTION -->
+<section id="signup">
+    <h2 class="" style="cursor: text;">Join Our Bridal Community</h2>
+    <p class="" style="cursor: text;">Be the first to know about new collections, exclusive events, and special appointments.</p>
+
+    <form>
+        <input type="email" placeholder="Enter your email" required="">
+        <button type="submit">Sign Up</button>
+    </form>
+</section>
+
+<!-- CONTACT SECTION -->
+<section id="contact">
+    <h2 class="" style="cursor: text;">Contact Us</h2>
+
+    <div class="contact-grid">
+        <div>
+            <h3 class="" style="cursor: text;">Visit Us</h3>
+            <p class="" style="cursor: text;">123 Bridal Lane<br>Cork, Co. Cork</p>
+        </div>
+
+        <div>
+            <h3 class="" style="cursor: text;">Hours</h3>
+            <p class="" style="cursor: text;">Mon–Fri: 10am – 6pm<br>Sat: 10am – 4pm<br>Sun: Closed</p>
+        </div>
+
+        <div>
+            <h3 class="" style="cursor: text;">Get In Touch</h3>
+            <p class="" style="cursor: text;">Email: info@bridalboutique.com<br>Phone: (000) 000‑0000</p>
+        </div>
     </div>
 
-  <!-- Stripe Payment Modal (hidden by default) -->
-  
-  
+    <a href="#hero" class="contact-btn">Book Your Appointment</a>
+</section>
 
-  <!-- Blocker-proof Stripe module (loads from jsDelivr CDN) -->
-  
+<footer>
+    © 2026 Bridal Boutique — Elegance in Every Detail
+</footer>
+
+</div>
 
 
-<iframe name="__privateStripeController1051" frameborder="0" allowtransparency="true" scrolling="no" role="presentation" allow="payment *" src="https://js.stripe.com/v3/controller-with-preconnect-1bc1392a519b86a72a620673ea931a28.html#__shared_params__[version]=dahlia&amp;__shared_params__[light_experiment_assignments]=%7B%22token%22%3A%22fb8f2e2c-d824-4ccb-8868-9924cdb87e5b%22%2C%22assignments%22%3A%7B%22link_ewcs_prewarm_experiment_v2%22%3A%22control%22%2C%22react_version_17_v2%22%3A%22treatment%22%7D%7D&amp;apiKey=pk_test_51SmbYSRqySo1SbUl9zUatOFdeP2eN1jYSDT4gNWFjzDaPLMF4QaeXONAJ9Ii2QVz7Bugnhp11UFCCFyg625JGGGu00uMAvRXJq&amp;apiVersion=2026-03-25.dahlia&amp;stripeJsId=fb8f2e2c-d824-4ccb-8868-9924cdb87e5b&amp;stripeObjId=sobj-4251ecd5-6b79-4706-bf05-1a410bb4c64f&amp;firstStripeInstanceCreatedLatency=21&amp;controllerCount=1&amp;isCheckout=false&amp;stripeJsLoadTime=1775906968481&amp;manualBrowserDeprecationRollout=false&amp;mids[guid]=NA&amp;mids[muid]=3037d065-8899-42f2-9838-806341a0c89f020af4&amp;mids[sid]=NA&amp;react_version_variant=treatment&amp;referrer=https%3A%2F%2Fwww.ideago.ie%2FDogGroomer%2FDogGroomer.html&amp;controllerId=__privateStripeController1051" aria-hidden="true" tabindex="-1" style="border: none !important; margin: 0px !important; padding: 0px !important; width: 1px !important; min-width: 100% !important; overflow: hidden !important; display: block !important; visibility: hidden !important; position: fixed !important; height: 1px !important; pointer-events: none !important; user-select: none !important;"></iframe><iframe name="__privateStripeMetricsController1050" frameborder="0" allowtransparency="true" scrolling="no" role="presentation" allow="payment *" src="https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fwww.ideago.ie%2FDogGroomer%2FDogGroomer.html&amp;title=Paws%20%26%20Shine%20Grooming&amp;referrer=https%3A%2F%2Fwww.ideago.ie%2FTemplates&amp;muid=3037d065-8899-42f2-9838-806341a0c89f020af4&amp;sid=NA&amp;version=6&amp;preview=false&amp;__shared_params__[version]=dahlia" aria-hidden="true" tabindex="-1" style="border: none !important; margin: 0px !important; padding: 0px !important; width: 1px !important; min-width: 100% !important; overflow: hidden !important; display: block !important; visibility: hidden !important; position: fixed !important; height: 1px !important; pointer-events: none !important; user-select: none !important;"></iframe></body></html>
+
+<div id="editor-shadow-host" style="all: initial;"></div><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><input type="file" accept="image/*" style="display: none;"><iframe name="__privateStripeController1911" frameborder="0" allowtransparency="true" scrolling="no" role="presentation" allow="payment *" src="https://js.stripe.com/v3/controller-with-preconnect-f5bcd3ea3c89ff5ff5a154202d53dfb8.html#__shared_params__[version]=dahlia&amp;__shared_params__[light_experiment_assignments]=%7B%22token%22%3A%22e2cf4b31-92c9-48eb-a064-717ade57a899%22%2C%22assignments%22%3A%7B%22habanero_aa_v1%22%3A%22treatment%22%7D%7D&amp;apiKey=pk_test_51SmbYSRqySo1SbUl9zUatOFdeP2eN1jYSDT4gNWFjzDaPLMF4QaeXONAJ9Ii2QVz7Bugnhp11UFCCFyg625JGGGu00uMAvRXJq&amp;apiVersion=2026-03-25.dahlia&amp;stripeJsId=e2cf4b31-92c9-48eb-a064-717ade57a899&amp;stripeObjId=sobj-6aa016e4-53a9-4c81-b8c9-467bd8577ef3&amp;firstStripeInstanceCreatedLatency=63&amp;controllerCount=1&amp;isCheckout=false&amp;stripeJsLoadTime=1778690223340&amp;manualBrowserDeprecationRollout=false&amp;mids[guid]=NA&amp;mids[muid]=0609f274-4239-4ea7-a0ea-780b651ee8a4d54027&amp;mids[sid]=6d9252f5-22b3-46ff-b452-b822a4efcb01dbc02c&amp;referrer=https%3A%2F%2Fwww.ideago.ie%2Fbridal%2Fbridal.html&amp;controllerId=__privateStripeController1911" aria-hidden="true" tabindex="-1" style="border-width: medium !important; border-style: none !important; border-color: currentcolor !important; border-image: initial !important; margin: 0px !important; padding: 0px !important; width: 1px !important; min-width: 100% !important; overflow: hidden !important; display: block !important; visibility: hidden !important; position: fixed !important; height: 1px !important; pointer-events: none !important; user-select: none !important;"></iframe><iframe name="__privateStripeMetricsController1910" frameborder="0" allowtransparency="true" scrolling="no" role="presentation" allow="payment *" src="https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fwww.ideago.ie%2Fbridal%2Fbridal.html&amp;title=Bridal%20Boutique&amp;referrer=https%3A%2F%2Fwww.ideago.ie%2FBusinessHud&amp;muid=0609f274-4239-4ea7-a0ea-780b651ee8a4d54027&amp;sid=6d9252f5-22b3-46ff-b452-b822a4efcb01dbc02c&amp;version=6&amp;preview=false&amp;__shared_params__[version]=dahlia" aria-hidden="true" tabindex="-1" style="border-width: medium !important; border-style: none !important; border-color: currentcolor !important; border-image: initial !important; margin: 0px !important; padding: 0px !important; width: 1px !important; min-width: 100% !important; overflow: hidden !important; display: block !important; visibility: hidden !important; position: fixed !important; height: 1px !important; pointer-events: none !important; user-select: none !important;"></iframe></body></html>
